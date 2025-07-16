@@ -4,7 +4,7 @@ project_name: todo
 release:
   github:
     owner: dhirajzope
-    name: todo
+    name: todo-cli
 
 builds:
   - id: todo
