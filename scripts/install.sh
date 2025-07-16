@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="dhirajzope/todo-cli"
+REPO="DhirajZope/todo-cli"
 VER=${1:-latest}
 OS=$(uname | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
@@ -12,10 +12,10 @@ ARCH=$(uname -m)
 if [[ "$VER" == "latest" ]]; then
   URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
     | grep "browser_download_url" \
-    | grep "${OS}_${ARCH}.tar.gz" \
+    | grep "${OS}-${ARCH}.tar.gz" \
     | head -n1 | cut -d '"' -f4)
 else
-  URL="https://github.com/$REPO/releases/download/$VER/todo_${VER}_${OS}_${ARCH}.tar.gz"
+  URL="https://github.com/$REPO/releases/download/$VER/todo_${VER}_${OS}-${ARCH}.tar.gz"
 fi
 
 echo "Downloading $URL"

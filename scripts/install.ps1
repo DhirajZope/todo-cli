@@ -18,7 +18,7 @@ param(
 )
 
 # Repo and binary details
-$repo   = "dhirajzope/todo-cli"
+$repo   = "DhirajZope/todo-cli"
 $binary = "todo.exe"
 $os      = "windows"
 $arch    = if ([Environment]::Is64BitOperatingSystem) { "amd64" } else { "386" }
@@ -28,10 +28,10 @@ if ($Version -eq "latest") {
     Write-Host "Fetching latest release info..."
     $rel   = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
     $asset = $rel.assets |
-        Where-Object { $_.name -like "*_${os}_${arch}.zip" } |
+        Where-Object { $_.name -like "*_${os}-${arch}.zip" } |
         Select-Object -First 1 -ExpandProperty browser_download_url
 } else {
-    $asset = "https://github.com/$repo/releases/download/$Version/todo_${Version}_${os}_${arch}.zip"
+    $asset = "https://github.com/$repo/releases/download/$Version/todo_${Version}_${os}-${arch}.zip"
 }
 
 if (-not $asset) {

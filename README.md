@@ -12,7 +12,33 @@ A beautiful and interactive terminal-based TODO application written in Go.
 
 ## 🚀 Installation
 
-### 📦 Binary Releases (Recommended)
+### ⚡ Quick Install (Recommended)
+
+**One-liner installation scripts that automatically download and install the latest version:**
+
+#### Linux / macOS
+```bash
+curl -sSL https://raw.githubusercontent.com/DhirajZope/todo-cli/master/scripts/install.sh | bash
+```
+
+#### Windows (PowerShell)
+```powershell
+iwr -useb https://raw.githubusercontent.com/DhirajZope/todo-cli/master/scripts/install.ps1 | iex
+```
+
+#### Windows (Command Prompt)
+```cmd
+powershell -c "iwr -useb https://raw.githubusercontent.com/DhirajZope/todo-cli/master/scripts/install.ps1 | iex"
+```
+
+> **What these scripts do:**
+> - Automatically detect your OS and architecture
+> - Download the latest release binary
+> - Install to the appropriate directory (`/usr/local/bin` on Unix, `%USERPROFILE%\bin` on Windows)
+> - Add to your PATH so you can use `todo` command everywhere
+> - No manual steps required!
+
+### 📦 Manual Binary Downloads
 
 Download pre-built binaries for your platform from the [releases page](https://github.com/DhirajZope/todo-cli/releases).
 
