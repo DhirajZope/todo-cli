@@ -26,6 +26,10 @@ func SetDB(conn *sql.DB) {
 	dbConn = conn
 }
 
+func GetDB() *sql.DB {
+	return dbConn
+}
+
 func init() {
 	RootCmd.AddCommand(listCmd)
 	RootCmd.AddCommand(taskCmd)

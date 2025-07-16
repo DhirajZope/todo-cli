@@ -1,58 +1,105 @@
 version: 2
 
 project_name: todo
+
 release:
   github:
     owner: dhirajzope
     name: todo-cli
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
 
 builds:
   - id: todo
     main: ./main.go
     binary: todo
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0  # Pure Go build - no CGO needed
+    ldflags:
+      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
     goos:
       - linux
       - darwin
       - windows
+      - freebsd
     goarch:
       - amd64
       - arm64
+      - 386
+      - arm
+    goarm:
+      - 6
+      - 7
+    ignore:
+      # 32-bit builds for modern OSes are rarely needed
+      - goos: darwin
+        goarch: 386
+      - goos: darwin
+        goarch: arm
 
 archives:
-  - id: tar
-    ids:
-      - todo                      # replaces deprecated `builds` :contentReference[oaicite:0]{index=0}
-    formats:
-      - tar.gz                    # replaces deprecated `format` :contentReference[oaicite:1]{index=1}
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-  - id: zip
-    ids:
-      - todo
-    formats:
-      - zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - id: default
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    files:
+      - README.md
+      - LICENSE*
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
 
 nfpms:
-  - id: deb
-    ids:
-      - todo                      # replaces deprecated `builds` :contentReference[oaicite:2]{index=2}
+  - id: default
+    package_name: todo
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
     formats:
-      - deb                       # replaces deprecated `format`
-    file_name_template:          # replaces deprecated `name_template`
-      "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.deb"
-    section: utils
-    description: "A simple terminal-based TODO application"
-    license: MIT
-    maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
-  - id: rpm
-    ids:
-      - todo
-    formats:
+      - deb
       - rpm
-    file_name_template:
-      "{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}.rpm"
-    description: "A simple terminal-based TODO application"
-    license: MIT
+      - apk
     maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
+    description: "A beautiful and interactive terminal-based TODO application"
+    license: MIT
+    homepage: "https://github.com/dhirajzope/todo-cli"
+    section: utils
+    priority: optional
+    bindir: /usr/bin
+
+brews:
+  - name: todo
+    repository:
+      owner: dhirajzope
+      name: homebrew-tap
+    description: "A beautiful and interactive terminal-based TODO application"
+    homepage: "https://github.com/dhirajzope/todo-cli"
+    license: MIT
+
+dockers:
+  - image_templates:
+      - "dhirajzope/todo:latest"
+      - "dhirajzope/todo:{{ .Tag }}"
+      - "dhirajzope/todo:v{{ .Major }}"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"

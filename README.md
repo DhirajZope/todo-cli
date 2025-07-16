@@ -1,67 +1,115 @@
-# todo-cli
+# Todo CLI
 
-A simple terminal-based TODO application built in Go, distributed as pre-built binaries and packages via GitHub Releases.
+A beautiful and interactive terminal-based TODO application written in Go.
 
----
+## ✨ Features
 
-## 🚀 Quick Install
+- **Pure Go**: No CGO dependencies - builds everywhere Go does
+- **Interactive CLI**: Beautiful terminal interface with modern UX
+- **Cross-platform**: Works on Linux, macOS, Windows, FreeBSD
+- **SQLite Database**: Persistent storage with pure Go SQLite driver
+- **Multiple Architectures**: Supports amd64, arm64, 386, and ARM
 
-### Linux & macOS
+## 🚀 Installation
 
+### From Releases
+Download the latest binary for your platform from the [releases page](https://github.com/dhirajzope/todo-cli/releases).
+
+### Using Go
 ```bash
-# install latest
-curl -sL https://raw.githubusercontent.com/yourusername/todo-cli/main/scripts/install.sh | bash
-
-# install specific version
-curl -sL https://raw.githubusercontent.com/yourusername/todo-cli/main/scripts/install.sh | bash -s v1.2.0
-
-```
-### Windows
-
-```bash
-# install latest
-irm https://raw.githubusercontent.com/yourusername/todo-cli/main/scripts/install.ps1 | iex
-
-# install specific version
-irm https://raw.githubusercontent.com/yourusername/todo-cli/main/scripts/install.ps1 | iex -Version v1.2.0
+go install github.com/dhirajzope/todo@latest
 ```
 
-### Or Download manually
-
-1. Go to [Releases](https://github.com/dhirajzope/todo-cli/releases)
-
-2. Download the appropriate asset:
-
-    - ```*.tar.gz``` or ```*.zip``` for generic binaries
-
-    - ```*.deb``` for Debian/Ubuntu
-
-    - ```*.rpm``` for Fedora/RHEL
-
-3. Extract or install:
-
+### Using Homebrew (macOS/Linux)
 ```bash
-# example for Debian/Ubuntu:
-sudo dpkg -i todo_1.2.0_amd64.deb
+brew tap dhirajzope/tap
+brew install todo
 ```
 
-### Usage
-
+### Using Docker
 ```bash
-todo --help
+docker run -it -v $(pwd)/data:/data dhirajzope/todo:latest
 ```
 
-List Management
+## 📖 Usage
+
+### Basic Commands
+
 ```bash
-todo list create "Work"
+# List all todo lists
 todo list all
-todo list delete 1
+
+# Create a new list
+todo create "My Tasks"
+
+# Add a task to a list
+todo task add 1 "Complete the project"
+
+# List tasks in a list
+todo task list 1
+
+# Complete a task
+todo complete 1
+
+# Delete a task
+todo task delete 1
 ```
 
-Task Management
+### Environment Variables
+
+- `DB_PATH`: Set custom database location (default: `todo.db`)
+
+## 🛠 Development
+
+### Prerequisites
+- Go 1.23+
+
+### Building
 ```bash
-todo task add 1 "Finish report"
-todo task list 1
-todo task complete 2
-todo task delete 2
+go build
 ```
+
+### Running Tests
+```bash
+go test ./...
+```
+
+### Cross-compilation
+Pure Go build means easy cross-compilation:
+```bash
+# Windows
+GOOS=windows GOARCH=amd64 go build -o todo.exe
+
+# Linux
+GOOS=linux GOARCH=amd64 go build -o todo
+
+# macOS
+GOOS=darwin GOARCH=amd64 go build -o todo
+```
+
+## 🏗 Architecture
+
+- **Pure Go SQLite**: Uses `modernc.org/sqlite` for CGO-free database operations
+- **Cobra CLI**: Modern CLI framework for command structure
+- **Bubble Tea**: Interactive terminal UI framework (coming soon)
+- **Lipgloss**: Styling and layout for beautiful terminal interfaces (coming soon)
+
+## 📦 Release Process
+
+The project uses GitHub Actions for automated releases:
+- Triggered on git tags (v*)
+- Builds for multiple platforms automatically
+- Publishes to GitHub Releases, Package registries, and Docker Hub
+- No CGO complications - builds everywhere!
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
