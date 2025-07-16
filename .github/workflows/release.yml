@@ -10,16 +10,32 @@ permissions:
   contents: write
 
 jobs:
-  # 1) Build on Linux, macOS & Windows with cgo enabled
+  # 1) Native cgo build per OS/arch
   build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        goos: [linux, darwin, windows]
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+          - os: windows-latest
+            goos: windows
+            goarch: arm64
     outputs:
-      dist-name: dist-${{ matrix.goos }}
+      artifact-name: dist-${{ matrix.goos }}-${{ matrix.goarch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -29,6 +45,9 @@ jobs:
         with:
           go-version: '1.23'
 
+      - name: Download dependencies
+        run: go mod download
+
       - name: Build snapshot (cgo enabled)
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -36,15 +55,17 @@ jobs:
           args: release --clean --snapshot --skip-publish
         env:
           CGO_ENABLED: '1'
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.goos }}
+          name: dist-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/
 
-  # 2) After all builds finish, collect artifacts and publish a single GitHub Release
+  # 2) Gather all artifacts + publish one GitHub Release
   publish:
     needs: build
     runs-on: ubuntu-latest
@@ -52,30 +73,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Download Linux artifacts
+      # download each of the six dist folders
+      - name: Download linux/amd64
         uses: actions/download-artifact@v4
         with:
-          name: dist-linux
-          path: dist/linux
+          name: dist-linux-amd64
+          path: dist/linux-amd64
 
-      - name: Download macOS artifacts
+      - name: Download linux/arm64
         uses: actions/download-artifact@v4
         with:
-          name: dist-darwin
-          path: dist/darwin
+          name: dist-linux-arm64
+          path: dist/linux-arm64
 
-      - name: Download Windows artifacts
+      - name: Download darwin/amd64
         uses: actions/download-artifact@v4
         with:
-          name: dist-windows
-          path: dist/windows
+          name: dist-darwin-amd64
+          path: dist/darwin-amd64
+
+      - name: Download darwin/arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-darwin-arm64
+          path: dist/darwin-arm64
+
+      - name: Download windows/amd64
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-windows-amd64
+          path: dist/windows-amd64
+
+      - name: Download windows/arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-windows-arm64
+          path: dist/windows-arm64
 
       - name: Consolidate dist/
         run: |
           mkdir -p dist-all
-          cp -r dist/linux/* dist-all/
-          cp -r dist/darwin/* dist-all/
-          cp -r dist/windows/* dist-all/
+          cp -r dist/linux-*/* dist-all/
+          cp -r dist/darwin-*/* dist-all/
+          cp -r dist/windows-*/* dist-all/
           rm -rf dist
           mv dist-all dist
 
