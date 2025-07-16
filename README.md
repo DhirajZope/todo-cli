@@ -17,17 +17,52 @@ A beautiful and interactive terminal-based TODO application written in Go.
 Download pre-built binaries for your platform from the [releases page](https://github.com/DhirajZope/todo-cli/releases).
 
 #### Windows
+
+##### PowerShell (Recommended)
 ```powershell
 # Download and extract (replace VERSION with latest release version)
-curl -L -o todo-windows-amd64.zip https://github.com/DhirajZope/todo-cli/releases/download/vVERSION/todo-windows-amd64.zip
-Expand-Archive todo-windows-amd64.zip
-move todo-windows-amd64\todo.exe C:\Windows\System32\todo.exe
+$version = "VERSION"  # Replace with actual version like "v1.0.0"
+$url = "https://github.com/DhirajZope/todo-cli/releases/download/$version/todo-windows-amd64.zip"
+Invoke-WebRequest -Uri $url -OutFile "todo-windows-amd64.zip"
+Expand-Archive -Path "todo-windows-amd64.zip" -DestinationPath "."
+Move-Item "todo-windows-amd64\todo.exe" "$env:USERPROFILE\AppData\Local\Microsoft\WindowsApps\todo.exe"
 
-# Or manually:
-# 1. Download todo-windows-amd64.zip from releases
-# 2. Extract todo.exe
-# 3. Move to a directory in your PATH (e.g., C:\Windows\System32)
+# Alternative: Install to a custom directory in PATH
+# New-Item -Path "C:\tools" -ItemType Directory -Force
+# Move-Item "todo-windows-amd64\todo.exe" "C:\tools\todo.exe"
+# [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";C:\tools", "User")
 ```
+
+##### Command Prompt (CMD)
+```cmd
+REM Download using curl (if available) - replace VERSION with actual version
+curl.exe -L -o todo-windows-amd64.zip https://github.com/DhirajZope/todo-cli/releases/download/vVERSION/todo-windows-amd64.zip
+
+REM Extract (requires 7-zip, WinRAR, or Windows 10+ built-in support)
+tar -xf todo-windows-amd64.zip
+
+REM Move to PATH directory
+move todo-windows-amd64\todo.exe %USERPROFILE%\AppData\Local\Microsoft\WindowsApps\
+```
+
+##### Using Chocolatey (Alternative)
+```powershell
+# Install Chocolatey first if not installed:
+# Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+# Then install todo-cli (when available)
+# choco install todo-cli
+```
+
+##### Manual Installation (No Command Line)
+1. Go to [releases page](https://github.com/DhirajZope/todo-cli/releases)
+2. Download `todo-windows-amd64.zip` (or `todo-windows-386.zip` for 32-bit)
+3. Right-click the zip file → "Extract All..."
+4. Copy `todo.exe` from the extracted folder
+5. Paste it into one of these directories:
+   - `%USERPROFILE%\AppData\Local\Microsoft\WindowsApps\` (recommended)
+   - `C:\Windows\System32\` (requires admin rights)
+   - Or create `C:\tools\` and add it to your PATH
 
 #### macOS
 ```bash
