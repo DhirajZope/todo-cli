@@ -1,0 +1,46 @@
+project_name: todo
+release:
+  github:
+    owner: dhirajzope
+    name: todo
+
+builds:
+  - id: todo
+    main: ./main.go
+    binary: todo
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: tar
+    builds: [todo]
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - id: zip
+    builds: [todo]
+    format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+nfpms:
+  - id: deb
+    builds: [todo]
+    packager: deb
+    format: deb
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.deb"
+    section: utils
+    description: "A simple terminal-based TODO application"
+    license: MIT
+    maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
+  - id: rpm
+    builds: [todo]
+    packager: rpm
+    format: rpm
+    name_template: "{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}.rpm"
+    description: "A simple terminal-based TODO application"
+    license: MIT
+    maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
