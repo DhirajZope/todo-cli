@@ -6,7 +6,7 @@ import (
 
 	"github.com/dhirajzope/todo/cmd"
 	"github.com/dhirajzope/todo/db"
-	_ "modernc.org/sqlite"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {

@@ -23,6 +23,21 @@ jobs:
         with:
           go-version: '1.23'
 
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib
+          # Install cross-compilation tools
+          sudo apt-get install -y gcc-mingw-w64-x86-64 gcc-mingw-w64-i686
+          # Install ARM64 cross-compilation tools
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          # Install macOS cross-compilation tools
+          sudo apt-get install -y clang
+
+      - name: Install SQLite development files
+        run: |
+          sudo apt-get install -y libsqlite3-dev
+
       - name: Run tests
         run: go test -v ./...
 

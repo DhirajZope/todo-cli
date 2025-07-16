@@ -13,32 +13,74 @@ before:
     - go test ./...
 
 builds:
-  - id: todo
+  # Linux builds
+  - id: linux-amd64
     main: ./main.go
     binary: todo
     env:
-      - CGO_ENABLED=0  # Pure Go build - no CGO needed
-    ldflags:
-      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
+      - CGO_ENABLED=1
+      - CC=gcc
     goos:
       - linux
-      - darwin
-      - windows
-      - freebsd
     goarch:
       - amd64
+    ldflags:
+      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
+
+  - id: linux-arm64
+    main: ./main.go
+    binary: todo
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc
+    goos:
+      - linux
+    goarch:
       - arm64
-      - 386
-      - arm
-    goarm:
-      - 6
-      - 7
-    ignore:
-      # 32-bit builds for modern OSes are rarely needed
-      - goos: darwin
-        goarch: 386
-      - goos: darwin
-        goarch: arm
+    ldflags:
+      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
+
+  # Windows builds
+  - id: windows-amd64
+    main: ./main.go
+    binary: todo
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+    goos:
+      - windows
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
+
+  # macOS builds (using clang)
+  - id: darwin-amd64
+    main: ./main.go
+    binary: todo
+    env:
+      - CGO_ENABLED=1
+      - CC=clang
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
+
+  - id: darwin-arm64
+    main: ./main.go
+    binary: todo
+    env:
+      - CGO_ENABLED=1
+      - CC=clang
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    ldflags:
+      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
 
 archives:
   - id: default
@@ -46,7 +88,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - README.md
       - LICENSE*
@@ -73,7 +115,6 @@ nfpms:
     formats:
       - deb
       - rpm
-      - apk
     maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
     description: "A beautiful and interactive terminal-based TODO application"
     license: MIT
