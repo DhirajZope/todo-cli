@@ -1,28 +1,91 @@
-name: 📦 Release
+name: Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  # 1) Build on Linux, macOS & Windows
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        goos: [linux, darwin, windows]
+      # pair each runner with its GOOS
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    outputs:
+      dist-name: dist-${{ matrix.goos }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
         with:
           go-version: '1.23'
-      - name: Install NFPM & RPM tools
-        run: sudo apt-get update && sudo apt-get install -y rpm dpkg
-      - name: Run GoReleaser
+
+      # on Linux we already have gcc; on macOS & Windows runners we also have a C toolchain
+      - name: Build snapshot (cgo enabled)
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean
+          args: release --clean --snapshot --skip-publish
+        env:
+          CGO_ENABLED: '1'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-${{ matrix.goos }}
+          path: dist/
+
+  # 2) After all builds finish, grab all the dist/ folders and publish in one GitHub Release
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # download each of the three dist folders
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-linux
+          path: dist/linux
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-darwin
+          path: dist/darwin
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-windows
+          path: dist/windows
+
+      # merge them all under a single top-level dist/
+      - name: Consolidate dist/
+        run: |
+          mkdir -p dist-all
+          cp -r dist/linux/* dist-all/
+          cp -r dist/darwin/* dist-all/
+          cp -r dist/windows/* dist-all/
+          rm -rf dist
+          mv dist-all dist
+
+      # finally publish using the previously-built artifacts (skip-build)
+      - name: Publish GitHub Release
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --clean --skip-build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CGO_ENABLED: 1
