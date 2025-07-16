@@ -1,3 +1,5 @@
+version: 2
+
 project_name: todo
 release:
   github:
@@ -18,29 +20,37 @@ builds:
 
 archives:
   - id: tar
-    builds: [todo]
-    format: tar.gz
+    ids:
+      - todo                      # replaces deprecated `builds` :contentReference[oaicite:0]{index=0}
+    formats:
+      - tar.gz                    # replaces deprecated `format` :contentReference[oaicite:1]{index=1}
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
   - id: zip
-    builds: [todo]
-    format: zip
+    ids:
+      - todo
+    formats:
+      - zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 nfpms:
   - id: deb
-    builds: [todo]
-    packager: deb
-    format: deb
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.deb"
+    ids:
+      - todo                      # replaces deprecated `builds` :contentReference[oaicite:2]{index=2}
+    formats:
+      - deb                       # replaces deprecated `format`
+    file_name_template:          # replaces deprecated `name_template`
+      "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.deb"
     section: utils
     description: "A simple terminal-based TODO application"
     license: MIT
     maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
   - id: rpm
-    builds: [todo]
-    packager: rpm
-    format: rpm
-    name_template: "{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}.rpm"
+    ids:
+      - todo
+    formats:
+      - rpm
+    file_name_template:
+      "{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}.rpm"
     description: "A simple terminal-based TODO application"
     license: MIT
     maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
