@@ -35,7 +35,7 @@ jobs:
             goos: windows
             goarch: arm64
     outputs:
-      artifact-name: dist-${{ matrix.goos }}-${{ matrix.goarch }}
+      artifact: dist-${{ matrix.goos }}-${{ matrix.goarch }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -48,24 +48,31 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Build snapshot (cgo enabled)
+      # <--- install the SQLite C dev headers on Linux --->
+      - name: Install SQLite3 dev on Linux
+        if: matrix.goos == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev
+
+      - name: Build (snapshot, cgo enabled)
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release --clean --snapshot --skip-publish
         env:
           CGO_ENABLED: '1'
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
+          GOOS:       ${{ matrix.goos }}
+          GOARCH:     ${{ matrix.goarch }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: ${{ needs.build.outputs.artifact }}
           path: dist/
 
-  # 2) Gather all artifacts + publish one GitHub Release
+  # 2) Gather all artifacts + publish one Release
   publish:
     needs: build
     runs-on: ubuntu-latest
@@ -73,37 +80,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # download each of the six dist folders
       - name: Download linux/amd64
         uses: actions/download-artifact@v4
         with:
           name: dist-linux-amd64
           path: dist/linux-amd64
-
       - name: Download linux/arm64
         uses: actions/download-artifact@v4
         with:
           name: dist-linux-arm64
           path: dist/linux-arm64
-
       - name: Download darwin/amd64
         uses: actions/download-artifact@v4
         with:
           name: dist-darwin-amd64
           path: dist/darwin-amd64
-
       - name: Download darwin/arm64
         uses: actions/download-artifact@v4
         with:
           name: dist-darwin-arm64
           path: dist/darwin-arm64
-
       - name: Download windows/amd64
         uses: actions/download-artifact@v4
         with:
           name: dist-windows-amd64
           path: dist/windows-amd64
-
       - name: Download windows/arm64
         uses: actions/download-artifact@v4
         with:
