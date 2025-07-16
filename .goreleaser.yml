@@ -10,6 +10,8 @@ builds:
   - id: todo
     main: ./main.go
     binary: todo
+    env:
+      - CGO_ENABLED=1
     goos:
       - linux
       - darwin
