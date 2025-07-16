@@ -2,85 +2,16 @@ version: 2
 
 project_name: todo
 
+# This file is kept for future reference but the release process
+# now uses GitHub Actions matrix builds for better platform compatibility
+
 release:
   github:
     owner: dhirajzope
     name: todo-cli
 
-before:
-  hooks:
-    - go mod tidy
-    - go test ./...
-
-builds:
-  # Linux builds
-  - id: linux-amd64
-    main: ./main.go
-    binary: todo
-    env:
-      - CGO_ENABLED=1
-      - CC=gcc
-    goos:
-      - linux
-    goarch:
-      - amd64
-    ldflags:
-      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
-
-  - id: linux-arm64
-    main: ./main.go
-    binary: todo
-    env:
-      - CGO_ENABLED=1
-      - CC=aarch64-linux-gnu-gcc
-    goos:
-      - linux
-    goarch:
-      - arm64
-    ldflags:
-      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
-
-  # Windows builds
-  - id: windows-amd64
-    main: ./main.go
-    binary: todo
-    env:
-      - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
-    goos:
-      - windows
-    goarch:
-      - amd64
-    ldflags:
-      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
-
-  # macOS builds (using clang)
-  - id: darwin-amd64
-    main: ./main.go
-    binary: todo
-    env:
-      - CGO_ENABLED=1
-      - CC=clang
-    goos:
-      - darwin
-    goarch:
-      - amd64
-    ldflags:
-      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
-
-  - id: darwin-arm64
-    main: ./main.go
-    binary: todo
-    env:
-      - CGO_ENABLED=1
-      - CC=clang
-    goos:
-      - darwin
-    goarch:
-      - arm64
-    ldflags:
-      - -s -w -X github.com/dhirajzope/todo/cmd.version={{.Version}} -X github.com/dhirajzope/todo/cmd.commit={{.Commit}} -X github.com/dhirajzope/todo/cmd.date={{.Date}}
+# Note: Currently using GitHub Actions matrix builds instead of GoReleaser
+# for better CGO cross-compilation support. See .github/workflows/release.yml
 
 archives:
   - id: default
@@ -96,9 +27,6 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
-
 changelog:
   sort: asc
   filters:
@@ -107,40 +35,3 @@ changelog:
       - '^test:'
       - '^chore:'
       - '^ci:'
-
-nfpms:
-  - id: default
-    package_name: todo
-    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
-    formats:
-      - deb
-      - rpm
-    maintainer: "Dhiraj Zope <dhirajzope@gmail.com>"
-    description: "A beautiful and interactive terminal-based TODO application"
-    license: MIT
-    homepage: "https://github.com/dhirajzope/todo-cli"
-    section: utils
-    priority: optional
-    bindir: /usr/bin
-
-brews:
-  - name: todo
-    repository:
-      owner: dhirajzope
-      name: homebrew-tap
-    description: "A beautiful and interactive terminal-based TODO application"
-    homepage: "https://github.com/dhirajzope/todo-cli"
-    license: MIT
-
-dockers:
-  - image_templates:
-      - "dhirajzope/todo:latest"
-      - "dhirajzope/todo:{{ .Tag }}"
-      - "dhirajzope/todo:v{{ .Major }}"
-    dockerfile: Dockerfile
-    build_flag_templates:
-      - "--pull"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
